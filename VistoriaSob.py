@@ -13,6 +13,7 @@ urlVistSob = 'http://gomnet.ampla.com/vistoria/vistorias.aspx'
 consulta = 'http://gomnet.ampla.com/ConsultaObra.aspx'
 username = login['A1'].value
 password = login['A2'].value
+Revisao = "N" # Altere para 'S' caso deseje buscar por sobs com status "Pendente", por terem ido para revisão de projeto
 
 # --------------- Headless Mode -------------------------
 # chromeOptions = webdriver.ChromeOptions()
@@ -42,8 +43,11 @@ if __name__ == '__main__':
     with open('sobs.txt') as data:
         datalines = (line.strip('\r\n') for line in data)
         for line in datalines:
+            # Opção de buscar por sobs com status "Pendente" (foram para revisão de projeto)
+            if Revisao == "S":
+                statusSob = Select(driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlStatus'))
+                statusSob.select_by_visible_text('PENDENTE')
             driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB').clear()
             sob = driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB')
             sob.send_keys(line)
-            # Pesquisa pela sob 03 vezes
             driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
