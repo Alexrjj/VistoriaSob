@@ -3,9 +3,10 @@ from selenium.common.exceptions import NoSuchElementException, NoAlertPresentExc
 from selenium import webdriver
 import openpyxl
 from selenium.webdriver.support.ui import Select
-import time
 
 #  Acessa os dados de login fora do script, salvo numa planilha existente, para proteger as informações de credenciais
+from selenium.webdriver.support.wait import WebDriverWait
+
 dados = openpyxl.load_workbook('C:\\gomnet.xlsx')
 login = dados['Plan1']
 url = 'http://gomnet.ampla.com/'
@@ -13,7 +14,7 @@ urlVistSob = 'http://gomnet.ampla.com/vistoria/vistorias.aspx'
 consulta = 'http://gomnet.ampla.com/ConsultaObra.aspx'
 username = login['A1'].value
 password = login['A2'].value
-Revisao = "N" # Altere para 'S' caso deseje buscar por sobs com status "Pendente", por terem ido para revisão de projeto
+Revisao = "N"  # Altere para 'S' caso deseje buscar por sobs com status "Pendente", por terem ido para revisão de projeto
 
 # --------------- Headless Mode -------------------------
 # chromeOptions = webdriver.ChromeOptions()
@@ -45,17 +46,23 @@ if __name__ == '__main__':
         for line in datalines:
             buscaVist = driver.window_handles[0]
             # Opção de buscar por sobs com status "Pendente" (foram para revisão de projeto)
-            if Revisao == "S":
+            if Revisao == "S":  # TODO Implementar detalhes de vistoria para obras em revisão de projeto
                 statusSob = Select(driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlStatus'))
                 statusSob.select_by_visible_text('PENDENTE')
             sob = driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB')
             sob.clear()
             sob.send_keys(line)
-            for x in range(0, 3): # Busca pela sob 03 vezes para ter certeza de que não consta registro
-                driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
-            try: # Verifica se a sob foi encontrada, caso contrário, registra no 'log.txt'
+            try:  # Verifica se a sob foi encontrada, caso contrário, registra no 'log.txt'
+                for x in range(0, 3):  # Busca pela sob 03 vezes para ter certeza de que não consta registro
+                    try:
+                        driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
+                        detalhe = driver.find_element_by_id("ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria")
+                        if detalhe.is_displayed():
+                            break
+                    except NoSuchElementException:
+                        continue
                 driver.find_element_by_id(
-                'ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria').click()
+                    'ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria').click()
                 detalhesVist = driver.window_handles[1]
                 driver.switch_to_window(detalhesVist)
                 hora = driver.find_element_by_id('txtHora')
@@ -65,7 +72,7 @@ if __name__ == '__main__':
                     c += 1
                 hora.send_keys('0800')
                 driver.find_element_by_id('chkProgramacao').click()
-                #driver.find_element_by_id('Button2').click()
+                # driver.find_element_by_id('Button2').click()
                 driver.close()
                 driver.switch_to_window(buscaVist)
             except NoSuchElementException:
