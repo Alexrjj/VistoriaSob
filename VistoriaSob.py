@@ -56,8 +56,9 @@ if __name__ == '__main__':
                 for x in range(0, 3):  # Busca pela sob 03 vezes para ter certeza de que não consta registro
                     try:
                         driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
-                        detalhe = driver.find_element_by_id("ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria")
-                        if detalhe.is_displayed():
+                        detalheBtn = driver.find_element_by_id(
+                            'ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria')
+                        if detalheBtn.is_displayed():
                             break
                     except NoSuchElementException:
                         continue
@@ -65,15 +66,19 @@ if __name__ == '__main__':
                     'ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria').click()
                 detalhesVist = driver.window_handles[1]
                 driver.switch_to_window(detalhesVist)
-                hora = driver.find_element_by_id('txtHora')
-                c = 0
-                while c <= 5:
-                    hora.send_keys(Keys.CONTROL + Keys.LEFT)
-                    c += 1
-                hora.send_keys('0800')
-                driver.find_element_by_id('chkProgramacao').click()
-                # driver.find_element_by_id('Button2').click()
-                driver.close()
+                chkProg = driver.find_element_by_id('chkProgramacao') # Insere checkbox "Programação" numa variável
+                if chkProg.is_selected(): # Verifica se a checkbox está selecionada
+                    driver.close()
+                else:
+                    hora = driver.find_element_by_id('txtHora')
+                    c = 0
+                    while c <= 5:
+                        hora.send_keys(Keys.CONTROL + Keys.LEFT)
+                        c += 1
+                    hora.send_keys('0800')
+                    driver.find_element_by_id('chkProgramacao').click()
+                    # driver.find_element_by_id('Button2').click() # Finaliza a vistoria
+                    driver.close()
                 driver.switch_to_window(buscaVist)
             except NoSuchElementException:
                 log = open('log.txt', 'a')
