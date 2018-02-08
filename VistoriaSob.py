@@ -3,6 +3,9 @@ from selenium.common.exceptions import NoSuchElementException, NoAlertPresentExc
 from selenium import webdriver
 import openpyxl
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 #  Acessa os dados de login fora do script, salvo numa planilha existente, para proteger as informações de credenciais
 from selenium.webdriver.support.wait import WebDriverWait
@@ -76,12 +79,21 @@ if __name__ == '__main__':
                         hora.send_keys(Keys.CONTROL + Keys.LEFT)
                         c += 1
                     hora.send_keys('0800')
-                    driver.find_element_by_id('chkProgramacao').click()
-                    driver.find_element_by_id('Button2').click() # Finaliza a vistoria
+                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'chkProgramacao'))).click()
+                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'Button2'))).click() # Finaliza a vistoria
+                    try:
+                        confirmMsg = WebDriverWait(driver, 10).until(EC.presence_of_element_located(
+                            (By.XPATH, "//*[contains(text(), 'Operação realizada com sucesso')]")))
+                        if confirmMsg.is_displayed():
+                            print(line + ' vistoriada com sucesso.')
+                    except NoSuchElementException:
+                        falhaDetalhe = open('log.txt', 'a')
+                        falhaDetalhe.write(line + ' falha ao inserir detalhes. Favor verificar')
+                        falhaDetalhe.close()
                     driver.close()
                 driver.switch_to_window(buscaVist)
             except NoSuchElementException:
-                log = open('log.txt', 'a')
-                log.write(line + ' não encontrada' + '\n')
-                log.close()
+                falhaVist = open('log.txt', 'a')
+                falhaVist.write(line + ' não encontrada' + '\n')
+                falhaVist.close()
                 continue
