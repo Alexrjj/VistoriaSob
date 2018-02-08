@@ -9,7 +9,7 @@ import time
 dados = openpyxl.load_workbook('C:\\gomnet.xlsx')
 login = dados['Plan1']
 url = 'http://gomnet.ampla.com/'
-urlVincSup = 'http://gomnet.ampla.com/vistoria/vincularSupervisor.aspx'
+urlVistSob = 'http://gomnet.ampla.com/vistoria/vistorias.aspx'
 consulta = 'http://gomnet.ampla.com/ConsultaObra.aspx'
 username = login['A1'].value
 password = login['A2'].value
@@ -34,3 +34,16 @@ if __name__ == '__main__':
     passw = driver.find_element_by_name('txtBoxSenha')
     passw.send_keys(password)
     submit_button = driver.find_element_by_id('ImageButton_Login').click()
+
+    # Acessa a página de Vistoria de Obra
+    driver.get(urlVistSob)
+
+    # Insere o número da Sob em seu respectivo campo e realiza a busca
+    with open('sobs.txt') as data:
+        datalines = (line.strip('\r\n') for line in data)
+        for line in datalines:
+            driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB').clear()
+            sob = driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB')
+            sob.send_keys(line)
+            # Pesquisa pela sob 03 vezes
+            driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
