@@ -43,11 +43,33 @@ if __name__ == '__main__':
     with open('sobs.txt') as data:
         datalines = (line.strip('\r\n') for line in data)
         for line in datalines:
+            buscaVist = driver.window_handles[0]
             # Opção de buscar por sobs com status "Pendente" (foram para revisão de projeto)
             if Revisao == "S":
                 statusSob = Select(driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlStatus'))
                 statusSob.select_by_visible_text('PENDENTE')
-            driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB').clear()
             sob = driver.find_element_by_id('ctl00_ContentPlaceHolder1_txtBoxNumSOB')
+            sob.clear()
             sob.send_keys(line)
-            driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
+            for x in range(0, 3): # Busca pela sob 03 vezes para ter certeza de que não consta registro
+                driver.find_element_by_id('ctl00_ContentPlaceHolder1_ImageButton_Enviar').click()
+            try: # Verifica se a sob foi encontrada, caso contrário, registra no 'log.txt'
+                driver.find_element_by_id(
+                'ctl00_ContentPlaceHolder1_gridViewVistorias_ctl02_ImageButton_DetalhesVistoria').click()
+                detalhesVist = driver.window_handles[1]
+                driver.switch_to_window(detalhesVist)
+                hora = driver.find_element_by_id('txtHora')
+                c = 0
+                while c <= 5:
+                    hora.send_keys(Keys.CONTROL + Keys.LEFT)
+                    c += 1
+                hora.send_keys('0800')
+                driver.find_element_by_id('chkProgramacao').click()
+                #driver.find_element_by_id('Button2').click()
+                driver.close()
+                driver.switch_to_window(buscaVist)
+            except NoSuchElementException:
+                log = open('log.txt', 'a')
+                log.write(line + ' não encontrada' + '\n')
+                log.close()
+                continue
