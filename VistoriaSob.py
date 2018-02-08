@@ -77,7 +77,7 @@ if __name__ == '__main__':
                         c += 1
                     hora.send_keys('0800')
                     driver.find_element_by_id('chkProgramacao').click()
-                    # driver.find_element_by_id('Button2').click() # Finaliza a vistoria
+                    driver.find_element_by_id('Button2').click() # Finaliza a vistoria
                     driver.close()
                 driver.switch_to_window(buscaVist)
             except NoSuchElementException:
